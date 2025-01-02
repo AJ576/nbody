@@ -65,7 +65,7 @@ class star(body):
         if self.mass <= self.SUN_MASS:
             self.radius = self.SUN_RADIUS * (self.mass / self.SUN_MASS) ** 0.8
         if self.mass > self.SUN_MASS:
-            self.radius = self.SUN_RADIUS(self.mass / self.SUN_MASS) ** 0.57
+            self.radius = self.SUN_RADIUS*(self.mass / self.SUN_MASS) ** 0.57
     
     def mass_to_color(self):
 
@@ -89,16 +89,16 @@ class star(body):
             return (0, 0, 255)
         
 
-sun = star(position=np.array([0, 0]), velocity=np.array([0, 0]), mass=1.989e30)
-earth = planet(position=np.array([1.5e11, 0]), velocity=np.array([0, 30000]), mass=5.972e24)
-jupiter = planet(position=np.array([7.785e11, 0]), velocity=np.array([0, 13000]), mass=1.898e27)  # Jupiter
-saturn  = planet(position=np.array([1.433e12, 0]), velocity=np.array([0, 9700]), mass=5.63e26)  # Saturn
+# sun = star(position=np.array([0, 0]), velocity=np.array([0, 0]), mass=1.989e30)
+# earth = planet(position=np.array([1.5e11, 0]), velocity=np.array([0, 30000]), mass=5.972e24)
+# jupiter = planet(position=np.array([7.785e11, 0]), velocity=np.array([0, 13000]), mass=1.898e27)  # Jupiter
+# saturn  = planet(position=np.array([1.433e12, 0]), velocity=np.array([0, 9700]), mass=5.63e26)  # Saturn
 
-print(sun.render())
-print(earth.render())
+# print(sun.render())
+# print(earth.render())
 
 
-print(sun.radius/1e3)
-print(earth.radius/1e3)
-print(jupiter.radius/1e3)
-print(saturn.radius/1e3)
+# print(sun.radius/1e3)
+# print(earth.radius/1e3)
+# print(jupiter.radius/1e3)
+# print(saturn.radius/1e3)
