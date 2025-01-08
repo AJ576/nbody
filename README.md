@@ -1,6 +1,8 @@
 # N-Body Simulation
 
-A dynamic and visually engaging n-body simulation inspired by **'The Three-Body Problem'**. This application simulates gravitational interactions between stars, planets, and particles, supporting features such as zooming, time control, camera movement, and preloaded celestial systems like the Solar System and Alpha Centauri.
+A dynamic and visually engaging n-body simulation inspired by **'The Three-Body Problem'**. This application simulates gravitational interactions between stars, planets, and particles, supporting features such as zooming, time control, camera movement, and preloaded systems like the Solar System and Alpha Centauri system.
+
+<img src='https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzdwZnk2OTNhZXZyZHpkYjJ1ejQ3ZnE0ODlnbHl1ZTl6NzMwc2Q3YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JfXHoVupwiljVT866u/giphy.gif' title='Video Walkthrough' alt='Video Walkthrough' />
 
 ## Features
 
@@ -18,13 +20,12 @@ A dynamic and visually engaging n-body simulation inspired by **'The Three-Body 
   - **Labels**: Mass, velocity, and type of focused bodies displayed on-screen.
 - **Preset Systems**:  
   - **Solar System**: Includes the Sun, planets, and Pluto.  
-  - **Alpha Centauri**: Binary stars with hypothetical planets and Proxima Centauri.  
-  - **Particle Cloud**: Dense particle systems for clustering and chaos. (still experimental, large amount of particles slow down the simulation significantly)
+  - **Alpha Centauri**: Binary stars with hypothetical planets and Proxima Centauri with known planet proxima centauri b.  
+  - **Particle Cloud**: Dense particle systems for clustering and visualizing formation of planets naturally. (still experimental, large amount of particles slow down the simulation significantly)
 - **Velocity Calculations**:  
-  - Compute escape velocity and orbital velocity during body addition.
+  - Computes and displays escape velocity and orbital velocity during body addition.
 - **Custom Visuals**:  
   - Dynamic rendering of body size and color.  
-  - Background-free clean visualization for focus on objects.
 
 ## Controls
 
@@ -44,7 +45,8 @@ A dynamic and visually engaging n-body simulation inspired by **'The Three-Body 
 - **Add Bodies**:  
   - `C` : Switch to "Star" mode.  
   - `P` : Switch to "Planet" mode.  
-  - Left-Click + Drag: Set velocity for a new body based on drag direction.  
+  - Left-Click + Drag: Set velocity for a new body based on drag direction.
+    - Drag velocity is relative w.r.t the focused body and raw velocity otherwise  
   - Hold Left-Click: Incrementally increase body mass.
 - `X` : Delete the currently focused body.
 
@@ -55,11 +57,12 @@ A dynamic and visually engaging n-body simulation inspired by **'The Three-Body 
 
 ## GIF Previews
 1. Solar System Simulation
+<img src='https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTc0OHp3bDloZ3d6MDQ3ZHRveG5nMWt5Y25ldGs0M241M2ZqaXZjNCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/KVhz36PLsePtgZHKht/giphy.gif' title='Video Walkthrough' alt='Video Walkthrough' />
 2. Alpha Centauri Interaction
-3. Particle Cloud Chaos
-4. Adding Bodies Dynamically
+<img src='https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnp4MjltaDhxMTVjdHBuejV0Zm81d3c1M3A2OHBnNjFqMXR4ZGQ2cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VIZVjC6nWPvqFMZbdT/giphy.gif' title='Video Walkthrough' alt='Video Walkthrough' />
+3. Adding Bodies Dynamically
+<img src='https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWc2NWc1ZnZlajNhazJxYnFpMWQ5aDZ0dmc2NTZ3ZmFmOTRteHJsMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/eI1ouNWCFBfqGvtw7j/giphy.gif' title='Video Walkthrough' alt='Video Walkthrough' />
 
-![Simulation Preview](https://via.placeholder.com/800x450?text=GIF+Placeholder)
 
 ## Requirements
 
