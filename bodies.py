@@ -31,7 +31,8 @@ class planet(body):
         elif self.mass <= 0.1 * self.JUPITER_MASS:  # Sub-Neptunes
             self.radius = self.EARTH_RADIUS * (self.mass / self.EARTH_MASS) ** 0.59
         elif self.mass <= self.JUPITER_MASS:  # Gas giants
-            self.radius = self.JUPITER_RADIUS
+            # Scaling for gas giants with a slight positive power
+            self.radius = self.JUPITER_RADIUS * (self.mass / self.JUPITER_MASS) ** 0.1
         else:  # Super-Jovian planets
             self.radius = self.JUPITER_RADIUS * (self.mass / self.JUPITER_MASS) ** -0.04
 
@@ -102,3 +103,29 @@ class star(body):
 # print(earth.radius/1e3)
 # print(jupiter.radius/1e3)
 # print(saturn.radius/1e3)
+
+class particle(body):
+    def __init__(self, position, velocity, mass):
+        super().__init__(position, velocity, mass)
+        self.status = 'particle'
+        self.radius = self.mass_to_radius()
+        
+    def mass_to_radius(self):
+        """
+        Calculate the radius for a particle based on its mass.
+        Particles are assumed to be very small compared to planets and stars.
+        """
+        return max(1e3, (self.mass / 1e20) ** (1/3) * 1e3)  # Scale radius proportionally to mass
+    
+    def mass_to_color(self):
+        """
+        Assign a uniform color to particles, representing their small size and lack of fusion activity.
+        """
+        return (169, 169, 169)  # Light Gray
+    
+    def render(self):
+        """
+        Render particle as a dictionary for visualization or output.
+        """
+        color = self.mass_to_color()
+        return {"position": self.position, "radius": self.radius, "color": color}

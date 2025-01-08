@@ -2,7 +2,7 @@ import time
 import pygame
 import math
 import numpy as np
-from bodies import body, planet, star
+from bodies import body, planet, star,particle
 
 class simulation:
     def __init__(self):
@@ -14,6 +14,7 @@ class simulation:
         self.bodies = []
         self.TIME = 24 * 60 * 60  #1 day initially
         self.DAY = 24 * 60 * 60  # Seconds in a day
+        self.TIME_PASSED = 0
         self.SLIDER_WIDTH = 300
         self.SLIDER_HEIGHT = 10
         self.focus_index  = -1
@@ -46,9 +47,11 @@ class simulation:
         if status == "star":
             mass if mass else self.PROXIMA_MIN_MASS
             new_body = star(position, velocity, mass)
-        else:
+        elif status == "planet":
             mass = min(self.max_mass_jupiter, mass)
             new_body = planet(position, velocity, mass)
+        else:
+            new_body = particle(position,velocity,mass)
         self.bodies.append(new_body)
         #change focus to recebtly added body if there are no bodies
         if self.focus_index == -1:
@@ -72,13 +75,25 @@ class simulation:
             )
         return forces
 
-    
+
     def update_positions(self):
+        # Step 1: Compute initial forces
         forces = self.compute_forces()
+        self.TIME_PASSED += self.TIME
+        
+        # Step 2: Half-step velocity update and full-step position update
         for i, body in enumerate(self.bodies):
-            accelration = forces[i] / body.mass
-            body.position += body.velocity * self.TIME + 0.5 * accelration * self.TIME**2
-            body.velocity += accelration * self.TIME
+            acceleration = forces[i] / body.mass
+            body.velocity += 0.5 * acceleration * self.TIME
+            body.position += body.velocity * self.TIME
+        
+        # Step 5: Recompute forces after positions are updated
+        forces = self.compute_forces()
+        
+        # Step 6: Finalize velocity updates
+        for i, body in enumerate(self.bodies):
+            acceleration = forces[i] / body.mass
+            body.velocity += 0.5 * acceleration * self.TIME
 
     def get_scaled_radius(self,body):
         radius = body.radius / self.SCALE
@@ -99,6 +114,23 @@ class simulation:
     def calculate_escape_velocity(self,mass1,mass2,distance):
         return math.sqrt(2 * self.G * (mass1+mass2)/distance)
     
+    def load_particle_cloud(self):
+        self.reset_bodies()  # Clear any existing bodies
+
+        # Constants for particle initialization
+        num_particles = 1000  # Number of particles
+        mass_range = (1e20, 1e25)  # Mass range of particles in kilograms
+        position_range = (-1e11, 1e11)  # Positions in meters
+        velocity_range = (-1e3, 1e3)  # Initial velocities in m/s
+
+        for _ in range(num_particles):
+            mass = np.random.uniform(*mass_range)
+            position = np.random.uniform(*position_range, size=2)  # 2D positions (x, y)
+            velocity = np.random.uniform(*velocity_range, size=2)  # 2D velocities (vx, vy)
+            self.add_body(position=position, velocity=velocity, mass=mass, status="particle")
+        self.TIME = 1e4
+        self.TIME_PASSED = 0
+    
     def load_solar_system(self):
         self.reset_bodies()
         self.add_body(position=np.array([0, 0]), velocity=np.array([0, 0]), mass=1.989e30, status="star")  # Sun
@@ -111,6 +143,55 @@ class simulation:
         self.add_body(position=np.array([2.87e12, 0]), velocity=np.array([0, 6800]), mass=8.681e25, status="planet")  # Uranus
         self.add_body(position=np.array([4.495e12, 0]), velocity=np.array([0, 5400]), mass=1.024e26, status="planet")  # Neptune
         self.add_body(position=np.array([5.906e12, 0]), velocity=np.array([0, 4700]), mass=1.303e22, status="planet")  # Pluto
+
+    def initialize_alpha_centauri_system(self):
+        # Constants
+        self.reset_bodies()
+        AU = 1.496e11  # meters in an AU
+        YEAR = 365.25 * 24 * 3600  # seconds in a year
+        SUN_MASS = 1.989e30  # kg
+        EARTH_MASS = 5.972e24  # kg
+
+        self.SCALE = 10*AU
+        
+        # Alpha Centauri A
+        position_a = np.array([11.7 * AU, 0])  # Place A at periapsis
+        velocity_a = np.array([0, 2840])  # Velocity in m/s  # Approximate orbital velocity at periapsis
+        self.add_body(position_a, velocity_a, mass=1.1 * SUN_MASS, status="star")
+
+        # Hypothetical planet around Alpha Centauri A
+        position_pa = position_a + np.array([1 * AU, 0])  # 1 AU from Alpha Centauri A
+        velocity_pa = velocity_a + np.array([0, 29800])  # Orbital velocity
+        self.add_body(position_pa, velocity_pa, mass=EARTH_MASS, status="planet")
+
+        # Alpha Centauri B
+        position_b = np.array([-11.7 * AU, 0])  # Place B at apoapsis
+        velocity_b = np.array([0, -3110])  # Opposite velocity direction
+        self.add_body(position_b, velocity_b, mass=0.907 * SUN_MASS, status="star")
+
+        # Proxima Centauri
+        position_proxima = np.array([13_000 * AU, 0])  # Approx. distance from barycenter
+        velocity_proxima = np.array([0, 294])  # Very slow orbital velocity
+        self.add_body(position_proxima, velocity_proxima, mass=0.12 * SUN_MASS, status="star")
+
+        # Hypothetical planet around Alpha Centauri B
+        position_pb = position_b + np.array([0.5 * AU, 0])  # 0.5 AU from Alpha Centauri B
+        velocity_pb = velocity_b + np.array([0, 35000])  # Orbital velocity
+        self.add_body(position_pb, velocity_pb, mass=EARTH_MASS, status="planet")
+
+        # Proxima b
+        position_proxima_b = position_proxima + np.array([0.0485 * AU, 0])  # Semi-major axis
+        velocity_proxima_b = velocity_proxima + np.array([0, 4.77e04])  # Orbital velocity
+        self.add_body(position_proxima_b, velocity_proxima_b, mass=1.17 * EARTH_MASS, status="planet")
+
+    def getTime(self):
+        if self.TIME_PASSED < 365*self.DAY:
+            return f"{self.TIME_PASSED/self.DAY:.2f} days"
+        elif self.TIME_PASSED < 365*24*self.DAY:
+            return f"{self.TIME_PASSED/(365*self.DAY):.2f} years"
+        else:
+            return f"{self.TIME_PASSED/(365*24*self.DAY):.2f} centuries"
+        
 
     def draw_bodies(self):
         for body in self.bodies:
@@ -128,18 +209,17 @@ class simulation:
             if x + radius > 0 and x - radius < self.WIDTH and y + radius > 0 and y - radius < self.HEIGHT:
                 pygame.draw.circle(self.screen, color, (x, y), int(radius))
 
-
         
             # Optionally, add labels for bodies
             if self.bodies[self.focus_index] != body:
                 if body.status == 'star':
                     label = self.font.render(f"Star: {body.mass:.2e} kg", True, (255, 255, 255))
                     self.screen.blit(label, (x + 10, y + 10))
-                else:
+                elif body.status == 'planet':
                     if self.SCALE < 5e10: # only show labels for planets for small scales
                         label = self.font.render(f"Planet: {body.mass:.2e} kg", True, (255, 255, 255))
                         self.screen.blit(label, (x + 10, y + 10))
-
+                
             if self.focus_index != -1:
                 mass_label = self.font.render(f"Mass: {self.bodies[self.focus_index].mass:.2e} kg", True, (255, 255, 255))
                 velocity_label_x_and_y = self.font.render(f"Velocity: {self.bodies[self.focus_index].velocity[0]:.2e} m/s, {self.bodies[self.focus_index].velocity[1]:.2e} m/s", True, (255, 255, 255))
@@ -193,6 +273,9 @@ class simulation:
             if self.preview_mode:
                 label = self.font.render("Preview Mode", True, (255, 255, 255))
             self.screen.blit(label, (self.WIDTH//2 - 30, 10))
+        else:
+            label = self.font.render(f"Time: {self.getTime()}", True, (255, 255, 255))
+            self.screen.blit(label, (10, self.HEIGHT - 30))
 
     def camera_update(self):
         if self.focus_index != -1:
@@ -201,6 +284,9 @@ class simulation:
     def reset_bodies(self):
         self.bodies = []
         self.focus_index = -1
+        self.TIME_PASSED = 0
+        self.TIME = 24 * 60 * 60  #1 day initially
+        self.simulation_running = False
 
     def run(self):
         running = True
@@ -216,6 +302,10 @@ class simulation:
                     #load solar system
                     if event.key == pygame.K_1:
                         self.load_solar_system()
+                    elif event.key == pygame.K_2:
+                        self.initialize_alpha_centauri_system()
+                    elif event.key == pygame.K_3:
+                        self.load_particle_cloud()
                     #Scale control
                     if event.key == pygame.K_EQUALS:  # Zoom in
                         self.SCALE = max(self.SCALE / 1.1, 1e3)  # Clamp to a minimum scale
@@ -235,10 +325,10 @@ class simulation:
                     #camera control
                     elif event.key == pygame.K_w:  # Move camera up
                         if self.focus_index == -1:
-                            self.camera_position[1] -= 50 * self.SCALE
+                            self.camera_position[1] += 50 * self.SCALE
                     elif event.key == pygame.K_s:  # Move camera down
                         if self.focus_index == -1:
-                            self.camera_position[1] += 50 *self.SCALE
+                            self.camera_position[1] -= 50 *self.SCALE
                     elif event.key == pygame.K_a:  # Move camera left
                         if self.focus_index == -1:
                             self.camera_position[0] -= 50 * self.SCALE
@@ -268,6 +358,7 @@ class simulation:
                         self.current_mode = "star"
                     elif event.key == pygame.K_p:  # Change to planet mode
                         self.current_mode = "planet"
+                    
                     
                     elif event.key == pygame.K_r:  # Reset the simulation
                         self.reset_bodies()
@@ -315,9 +406,9 @@ class simulation:
             if self.preview_mode and click_position is not None:
                 hold_duration = time.time() - mouse_down_time
                 if self.current_mode == "star":
-                    preview_mass = self.PROXIMA_MIN_MASS + hold_duration * 3e29
+                    preview_mass = self.PROXIMA_MIN_MASS + hold_duration * 2e29
                 else:
-                    max_hold_time = 15
+                    max_hold_time = 20
                     mass_range = self.max_mass_jupiter - self.min_mass_pluto
                     progress = min(hold_duration / max_hold_time, 1)
                     scaled_increment = mass_range * (progress ** 4)
@@ -349,6 +440,3 @@ class simulation:
 
         pygame.quit()
 
-if __name__ == "__main__":
-    sim = simulation()
-    sim.run()
